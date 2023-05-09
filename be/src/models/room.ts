@@ -15,9 +15,9 @@ class Room extends Model {
           unique: true,
         },
         created_at: {
-          type: Sequelize.DATE,
+          type: DataTypes.DATE,
           allowNull: false,
-          defaultValue: Sequelize.NOW,
+          defaultValue: DataTypes.NOW,
         },
       },
       {

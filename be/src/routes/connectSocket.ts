@@ -5,17 +5,17 @@ const joinRoom = require("../services/socket/joinRoom");
 module.exports = (server) => {
   const io = new socketIO.Server(server, {
     cors: {
-      // origin: process.env.ORIGIN,
-      origin: "*",
+      origin: process.env.ORIGIN,
+      // origin: "*",
       optionsSuccessStatus: 200,
-      // credentials: true,
+      credentials: true,
     },
   });
 
   io.on("connection", (socket) => {
-    socket.on("create_room", (roomName, done) => createRoom(socket, roomName, done));
+    socket.on("create_room", (roomName, done) => createRoom(socket, roomName));
 
-    socket.on("join_room", (roomName, done) => joinRoom(socket, roomName, done));
+    socket.on("join_room", (roomName, done) => joinRoom(socket, roomName));
 
     socket.on("send_offer", (offer: RTCSessionDescriptionInit, roomName: string) => {
       socket.to(roomName).emit("receive_offer", offer);

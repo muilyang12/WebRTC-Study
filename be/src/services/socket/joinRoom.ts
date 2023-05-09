@@ -1,8 +1,5 @@
-module.exports = (socket, roomName, done) => {
+module.exports = (socket, roomName) => {
   socket.join(roomName);
-  done();
 
-  console.log(socket.rooms);
-
-  socket.to(roomName).emit("send_welcome");
+  socket.to(roomName).emit("someone_joined");
 };

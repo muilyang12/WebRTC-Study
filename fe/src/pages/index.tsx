@@ -19,7 +19,7 @@ export default function Home() {
     const socket = io(process.env.API_BASE_URI);
     const rtcConnection = new RTCPeerConnection();
 
-    socket.on("send_welcome", async () => {
+    socket.on("someone_joined", async () => {
       console.log("Someone joined. :)");
 
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -78,7 +78,7 @@ export default function Home() {
       if (!socket) return;
       if (!videoRef.current) throw new Error("No video element exists.");
 
-      socket.emit("create_room", roomName, ROOM_OWNER, doneFunc);
+      socket.emit("create_room", roomName);
       console.log("create_room");
 
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -95,7 +95,7 @@ export default function Home() {
   const handleJoinRoomButtonClick = () => {
     if (!socket) return;
 
-    socket.emit("join_room", roomName, doneFunc);
+    socket.emit("join_room", roomName);
     console.log("join_room");
   };
 

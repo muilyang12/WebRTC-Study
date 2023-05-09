@@ -1,8 +1,5 @@
-module.exports = async (socket, roomName, done) => {
+module.exports = async (socket, roomName) => {
   socket.join(roomName);
-  done();
 
   console.log(socket.rooms);
 };
-
-export {};

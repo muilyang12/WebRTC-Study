@@ -9,15 +9,15 @@ const morgan = require("morgan");
 
 const roomRoute = require("./src/routes/roomRoute");
 
-const { sequelize } = require("./src/models/index");
-sequelize
-  .sync({ force: false })
-  .then(() => {
-    console.log("DB Connected. :)");
-  })
-  .catch((err) => {
-    console.error(`DB Connection failed. :( - ${err}`);
-  });
+// const { sequelize } = require("./src/models/index");
+// sequelize
+//   .sync({ force: false })
+//   .then(() => {
+//     console.log("DB Connected. :)");
+//   })
+//   .catch((err) => {
+//     console.error(`DB Connection failed. :( - ${err}`);
+//   });
 
 const connectSocket = require("./src/routes/connectSocket");
 
@@ -29,10 +29,10 @@ const server = http.createServer(app);
 connectSocket(server);
 
 const corsOptions = {
-  // origin: process.env.ORIGIN,
-  origin: "*",
+  origin: process.env.ORIGIN,
+  // origin: "*",
   optionsSuccessStatus: 200,
-  // credentials: true,
+  credentials: true,
 };
 app.use(cors(corsOptions));
 
