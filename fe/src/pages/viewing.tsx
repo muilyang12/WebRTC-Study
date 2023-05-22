@@ -16,28 +16,36 @@ export default function Drawing() {
     const socket = io(process.env.API_BASE_URI);
     const rtcConnection = new RTCPeerConnection();
 
+    let canvas: HTMLCanvasElement;
+    let context: CanvasRenderingContext2D;
+
     socket.on("receive_offer", async (offer: RTCSessionDescriptionInit) => {
       console.log("receive_offer");
 
       rtcConnection.addEventListener("datachannel", (event) => {
         const drawingDataChannel = event.channel;
+
         drawingDataChannel.addEventListener("open", () => {
           console.log("Channel opened");
-        });
-        drawingDataChannel.addEventListener("message", (event) => {
-          const canvas = document.querySelector("#viewing-canvas") as HTMLCanvasElement;
+
+          canvas = document.querySelector("#viewing-canvas") as HTMLCanvasElement;
           canvas.width = canvas.getBoundingClientRect().width;
           canvas.height = canvas.getBoundingClientRect().height;
 
-          const context = canvas.getContext("2d") as CanvasRenderingContext2D;
+          context = canvas.getContext("2d") as CanvasRenderingContext2D;
           context.strokeStyle = "#000000";
           context.lineWidth = 2.5;
 
+          context.beginPath();
+        });
+
+        drawingDataChannel.addEventListener("message", (event) => {
           const parsedData = JSON.parse(event.data);
           const x = parsedData.relativeX * canvas.width;
           const y = parsedData.relativeY * canvas.height;
 
-          console.log(parsedData);
+          context.lineTo(x, y);
+          context.stroke();
         });
 
         setDrawingDataChannel(drawingDataChannel);
