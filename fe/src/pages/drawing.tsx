@@ -1,12 +1,14 @@
 import { useState, useEffect, PointerEvent } from "react";
 import { useRouter } from "next/router";
 import { io, Socket } from "socket.io-client";
+import useSendCanvasDrawing from "@/hooks/pages/paint/useSendCanvasDrawing";
 
 export default function Drawing() {
   const router = useRouter();
   const { roomName } = router.query;
 
   const [socket, setSocket] = useState<Socket>();
+  const [rtcConnection, setRtcConnection] = useState<RTCPeerConnection>();
   const [drawingDataChannel, setDrawingDataChannel] = useState<RTCDataChannel>();
 
   useEffect(() => {
@@ -18,13 +20,6 @@ export default function Drawing() {
 
     socket.on("someone_joined", async () => {
       console.log("Someone joined. :)");
-
-      const drawingDataChannel = rtcConnection.createDataChannel(`${roomName}-drawingDataChannel`);
-      drawingDataChannel.addEventListener("open", () => {
-        console.log("Channel opened");
-      });
-
-      setDrawingDataChannel(drawingDataChannel);
 
       const offer = await rtcConnection.createOffer();
       rtcConnection.setLocalDescription(offer);
@@ -47,6 +42,7 @@ export default function Drawing() {
       rtcConnection.addIceCandidate(candidate);
     });
 
+    setRtcConnection(rtcConnection);
     setSocket(socket);
   }, [roomName]);
 
@@ -57,59 +53,51 @@ export default function Drawing() {
     console.log("create_room");
   }, [socket]);
 
-  const handleClickButton = () => {
-    drawingDataChannel?.send("Data");
-  };
-
   useEffect(() => {
-    if (!drawingDataChannel) return;
+    if (!rtcConnection) return;
 
-    const canvas = document.querySelector("#drawing-canvas") as HTMLCanvasElement;
+    const drawingDataChannel = rtcConnection.createDataChannel(`${roomName}-drawingDataChannel`);
 
-    canvas.width = canvas.getBoundingClientRect().width;
-    canvas.height = canvas.getBoundingClientRect().height;
+    let canvas: HTMLCanvasElement;
+    let context: CanvasRenderingContext2D;
 
-    const context = canvas.getContext("2d") as CanvasRenderingContext2D;
-    context.strokeStyle = "#000000";
-    context.lineWidth = 2.5;
+    drawingDataChannel.addEventListener("open", () => {
+      console.log("Channel opened");
 
-    let isPainting = false;
+      canvas = document.querySelector("#canvas") as HTMLCanvasElement;
+      canvas.width = canvas.getBoundingClientRect().width;
+      canvas.height = canvas.getBoundingClientRect().height;
 
-    const startDrawing = () => {
-      isPainting = true;
-    };
-    const stopDrawing = () => {
-      isPainting = false;
-    };
+      context = canvas.getContext("2d") as CanvasRenderingContext2D;
+      context.strokeStyle = "#000000";
+      context.lineWidth = 2.5;
 
-    canvas.addEventListener("mousedown", startDrawing);
-    canvas.addEventListener("mouseup", stopDrawing);
-    canvas.addEventListener("mouseleave", stopDrawing);
+      context.beginPath();
+    });
 
-    canvas.addEventListener("pointermove", (event) => {
-      const x = event.offsetX;
-      const y = event.offsetY;
+    drawingDataChannel.addEventListener("message", (event) => {
+      const parsedData = JSON.parse(event.data);
 
-      if (isPainting) {
+      const x = parsedData.relativeX * canvas.width;
+      const y = parsedData.relativeY * canvas.height;
+
+      if (parsedData.isPainting) {
         context.lineTo(x, y);
         context.stroke();
-
-        const relativeX = x / canvas.getBoundingClientRect().width;
-        const relativeY = y / canvas.getBoundingClientRect().height;
-
-        const data = { relativeX, relativeY };
-        drawingDataChannel.send(JSON.stringify(data));
       } else {
         context.beginPath();
         context.moveTo(x, y);
       }
     });
-  }, [drawingDataChannel]);
+
+    setDrawingDataChannel(drawingDataChannel);
+  }, [rtcConnection]);
+
+  useSendCanvasDrawing({ drawingDataChannel, color: "#000000", lineWidth: 2.5 });
 
   return (
     <>
-      <button onClick={handleClickButton}>Send</button>
-      <canvas id="drawing-canvas" />
+      <canvas id="canvas" />
 
       <style jsx>{`
         button {
@@ -121,7 +109,7 @@ export default function Drawing() {
           font-size: 20px;
         }
 
-        #drawing-canvas {
+        #canvas {
           width: 100%;
           height: 100vh;
         }
