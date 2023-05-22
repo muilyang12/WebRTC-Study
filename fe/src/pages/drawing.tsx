@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, PointerEvent } from "react";
 import { useRouter } from "next/router";
 import { io, Socket } from "socket.io-client";
 
@@ -61,13 +61,61 @@ export default function Drawing() {
     drawingDataChannel?.send("Data");
   };
 
+  useEffect(() => {
+    const canvas = document.querySelector("#drawing-canvas") as HTMLCanvasElement;
+
+    canvas.width = canvas.getBoundingClientRect().width;
+    canvas.height = canvas.getBoundingClientRect().height;
+
+    const context = canvas.getContext("2d") as CanvasRenderingContext2D;
+    context.strokeStyle = "#000000";
+    context.lineWidth = 2.5;
+
+    let isPainting = false;
+
+    const startDrawing = () => {
+      isPainting = true;
+    };
+    const stopDrawing = () => {
+      isPainting = false;
+    };
+
+    canvas?.addEventListener("mousedown", startDrawing);
+    canvas?.addEventListener("mouseup", stopDrawing);
+    canvas?.addEventListener("mouseleave", stopDrawing);
+
+    canvas?.addEventListener("pointermove", (event) => {
+      const x = event.offsetX;
+      const y = event.offsetY;
+
+      if (isPainting) {
+        context?.lineTo(x, y);
+        context?.stroke();
+      } else {
+        context?.beginPath();
+        context?.moveTo(x, y);
+      }
+    });
+  }, []);
+
   return (
     <>
       <button onClick={handleClickButton}>Send</button>
+      <canvas id="drawing-canvas" />
 
       <style jsx>{`
         button {
+          position: absolute;
+          top: 0;
+          left: 0;
+          padding: 5px 10px;
+
           font-size: 20px;
+        }
+
+        #drawing-canvas {
+          width: 100%;
+          height: 100vh;
         }
       `}</style>
     </>
