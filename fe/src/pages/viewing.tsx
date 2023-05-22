@@ -19,6 +19,18 @@ export default function Drawing() {
     socket.on("receive_offer", async (offer: RTCSessionDescriptionInit) => {
       console.log("receive_offer");
 
+      rtcConnection.addEventListener("datachannel", (event) => {
+        const drawingDataChannel = event.channel;
+        drawingDataChannel.addEventListener("open", () => {
+          console.log("Channel opened");
+        });
+        drawingDataChannel.addEventListener("message", (event) => {
+          alert(event.data);
+        });
+
+        setDrawingDataChannel(drawingDataChannel);
+      });
+
       rtcConnection.setRemoteDescription(offer);
 
       const answer = await rtcConnection.createAnswer();
@@ -26,23 +38,6 @@ export default function Drawing() {
 
       socket.emit("send_answer", answer, roomName);
       console.log("send_answer");
-
-      const drawingDataChannel = rtcConnection.createDataChannel(`${roomName}-drawingDataChannel`);
-
-      drawingDataChannel.onopen = () => {
-        console.log("Data chanel has opened.");
-      };
-
-      drawingDataChannel.onmessage = (event) => {
-        const receivedData = event.data;
-        console.log("receivedData", receivedData);
-      };
-
-      drawingDataChannel.onclose = () => {
-        console.log("Data chanel has closed.");
-      };
-
-      setDrawingDataChannel(drawingDataChannel);
     });
 
     rtcConnection.addEventListener("icecandidate", (data: RTCPeerConnectionIceEvent) => {
