@@ -25,7 +25,19 @@ export default function Drawing() {
           console.log("Channel opened");
         });
         drawingDataChannel.addEventListener("message", (event) => {
-          alert(event.data);
+          const canvas = document.querySelector("#viewing-canvas") as HTMLCanvasElement;
+          canvas.width = canvas.getBoundingClientRect().width;
+          canvas.height = canvas.getBoundingClientRect().height;
+
+          const context = canvas.getContext("2d") as CanvasRenderingContext2D;
+          context.strokeStyle = "#000000";
+          context.lineWidth = 2.5;
+
+          const parsedData = JSON.parse(event.data);
+          const x = parsedData.relativeX * canvas.width;
+          const y = parsedData.relativeY * canvas.height;
+
+          console.log(parsedData);
         });
 
         setDrawingDataChannel(drawingDataChannel);
@@ -60,5 +72,16 @@ export default function Drawing() {
     console.log("join_room");
   }, [socket]);
 
-  return <></>;
+  return (
+    <>
+      <canvas id="viewing-canvas" />
+
+      <style jsx>{`
+        #viewing-canvas {
+          width: 100%;
+          height: 100vh;
+        }
+      `}</style>
+    </>
+  );
 }

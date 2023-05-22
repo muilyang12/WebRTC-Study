@@ -62,6 +62,8 @@ export default function Drawing() {
   };
 
   useEffect(() => {
+    if (!drawingDataChannel) return;
+
     const canvas = document.querySelector("#drawing-canvas") as HTMLCanvasElement;
 
     canvas.width = canvas.getBoundingClientRect().width;
@@ -80,23 +82,29 @@ export default function Drawing() {
       isPainting = false;
     };
 
-    canvas?.addEventListener("mousedown", startDrawing);
-    canvas?.addEventListener("mouseup", stopDrawing);
-    canvas?.addEventListener("mouseleave", stopDrawing);
+    canvas.addEventListener("mousedown", startDrawing);
+    canvas.addEventListener("mouseup", stopDrawing);
+    canvas.addEventListener("mouseleave", stopDrawing);
 
-    canvas?.addEventListener("pointermove", (event) => {
+    canvas.addEventListener("pointermove", (event) => {
       const x = event.offsetX;
       const y = event.offsetY;
 
       if (isPainting) {
-        context?.lineTo(x, y);
-        context?.stroke();
+        context.lineTo(x, y);
+        context.stroke();
+
+        const relativeX = x / canvas.getBoundingClientRect().width;
+        const relativeY = y / canvas.getBoundingClientRect().height;
+
+        const data = { relativeX, relativeY };
+        drawingDataChannel.send(JSON.stringify(data));
       } else {
-        context?.beginPath();
-        context?.moveTo(x, y);
+        context.beginPath();
+        context.moveTo(x, y);
       }
     });
-  }, []);
+  }, [drawingDataChannel]);
 
   return (
     <>
