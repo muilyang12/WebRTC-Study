@@ -6,7 +6,7 @@ interface UseSendCanvasDrawingParams {
   lineWidth?: number;
 }
 
-export default function useSendCanvasDrawing(props: UseSendCanvasDrawingParams) {
+export default function useCanvasDrawing(props: UseSendCanvasDrawingParams) {
   const { drawingDataChannel, color = "#000000", lineWidth = 2.5 } = props;
 
   useEffect(() => {

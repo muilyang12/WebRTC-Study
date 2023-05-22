@@ -1,7 +1,7 @@
 import { useState, useEffect, PointerEvent } from "react";
 import { useRouter } from "next/router";
 import { io, Socket } from "socket.io-client";
-import useSendCanvasDrawing from "@/hooks/pages/paint/useSendCanvasDrawing";
+import useCanvasDrawing from "@/hooks/pages/paint/useCanvasDrawing";
 
 export default function Drawing() {
   const router = useRouter();
@@ -93,7 +93,7 @@ export default function Drawing() {
     setDrawingDataChannel(drawingDataChannel);
   }, [rtcConnection]);
 
-  useSendCanvasDrawing({ drawingDataChannel, color: "#000000", lineWidth: 2.5 });
+  useCanvasDrawing({ drawingDataChannel, color: "#000000", lineWidth: 2.5 });
 
   return (
     <>
