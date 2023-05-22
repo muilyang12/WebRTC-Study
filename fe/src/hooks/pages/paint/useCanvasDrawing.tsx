@@ -52,5 +52,5 @@ export default function useCanvasDrawing(props: UseSendCanvasDrawingParams) {
       const data = { isPainting, relativeX, relativeY };
       drawingDataChannel.send(JSON.stringify(data));
     });
-  }, [drawingDataChannel]);
+  }, [drawingDataChannel, color, lineWidth]);
 }
