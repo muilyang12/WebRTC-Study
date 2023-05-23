@@ -1,4 +1,4 @@
-import { useState, useEffect, PointerEvent } from "react";
+import { useState, useEffect, PointerEvent, createElement } from "react";
 import { useRouter } from "next/router";
 import { io, Socket } from "socket.io-client";
 import useCanvasDrawing from "@/hooks/pages/paint/useCanvasDrawing";
@@ -6,7 +6,7 @@ import useWebRtcConnecting from "@/hooks/pages/common/useWebRtcConnecting";
 
 export default function Drawing() {
   const router = useRouter();
-  const { roomName } = router.query;
+  const { roomName, userName } = router.query;
 
   const { socket, rtcConnection } = useWebRtcConnecting({
     roomName: Array.isArray(roomName) ? roomName[0] : roomName,
@@ -28,6 +28,8 @@ export default function Drawing() {
     let canvas: HTMLCanvasElement;
     let context: CanvasRenderingContext2D;
 
+    let mark: HTMLDivElement;
+
     drawingDataChannel.addEventListener("open", () => {
       console.log("Channel opened");
 
@@ -40,6 +42,18 @@ export default function Drawing() {
       context.lineWidth = 2.5;
 
       context.beginPath();
+
+      mark = document.createElement("div");
+      mark.style.fontSize = "20px";
+      mark.style.position = "absolute";
+      mark.style.top = `-20px`;
+      mark.style.left = `-20px`;
+      mark.style.width = "30px";
+      mark.style.height = "30px";
+      mark.style.textAlign = "center";
+      mark.style.border = "1px solid black";
+
+      document.body.appendChild(mark);
     });
 
     drawingDataChannel.addEventListener("message", (event) => {
@@ -47,6 +61,19 @@ export default function Drawing() {
 
       const x = parsedData.relativeX * canvas.width;
       const y = parsedData.relativeY * canvas.height;
+
+      const userName = parsedData.userName;
+
+      const element = document.createElement("div");
+      element.innerHTML = userName;
+      element.style.fontSize = "20px";
+      element.style.position = "absolute";
+      element.style.top = `${y}px`;
+      element.style.left = `${x}px`;
+
+      mark.innerHTML = userName;
+      mark.style.top = `${y}px`;
+      mark.style.left = `${x}px`;
 
       if (parsedData.isPainting) {
         context.lineTo(x, y);
@@ -60,7 +87,12 @@ export default function Drawing() {
     setDrawingDataChannel(drawingDataChannel);
   }, [rtcConnection]);
 
-  useCanvasDrawing({ drawingDataChannel, color: "#000000", lineWidth: 2.5 });
+  useCanvasDrawing({
+    drawingDataChannel,
+    color: "#000000",
+    lineWidth: 2.5,
+    userName: Array.isArray(userName) ? userName[0] : userName,
+  });
 
   return (
     <>

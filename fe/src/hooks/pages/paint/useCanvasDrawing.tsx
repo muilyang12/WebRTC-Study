@@ -4,10 +4,11 @@ interface UseSendCanvasDrawingParams {
   drawingDataChannel?: RTCDataChannel;
   color?: string;
   lineWidth?: number;
+  userName?: string;
 }
 
 export default function useCanvasDrawing(props: UseSendCanvasDrawingParams) {
-  const { drawingDataChannel, color = "#000000", lineWidth = 2.5 } = props;
+  const { drawingDataChannel, color = "#000000", lineWidth = 2.5, userName } = props;
 
   useEffect(() => {
     if (!drawingDataChannel) return;
@@ -49,7 +50,7 @@ export default function useCanvasDrawing(props: UseSendCanvasDrawingParams) {
       const relativeX = x / canvas.getBoundingClientRect().width;
       const relativeY = y / canvas.getBoundingClientRect().height;
 
-      const data = { isPainting, relativeX, relativeY };
+      const data = { isPainting, relativeX, relativeY, userName };
       drawingDataChannel.send(JSON.stringify(data));
     });
   }, [drawingDataChannel, color, lineWidth]);

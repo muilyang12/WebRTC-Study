@@ -1,12 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
-import { io, Socket } from "socket.io-client";
 import useCanvasDrawing from "@/hooks/pages/paint/useCanvasDrawing";
 import useWebRtcConnecting from "@/hooks/pages/common/useWebRtcConnecting";
 
 export default function Drawing() {
   const router = useRouter();
-  const { roomName } = router.query;
+  const { roomName, userName } = router.query;
+
+  const markRef = useRef<HTMLDivElement>(null);
 
   const { socket, rtcConnection } = useWebRtcConnecting({
     roomName: Array.isArray(roomName) ? roomName[0] : roomName,
@@ -22,6 +23,8 @@ export default function Drawing() {
   const [drawingDataChannel, setDrawingDataChannel] = useState<RTCDataChannel>();
   useEffect(() => {
     if (!rtcConnection) return;
+
+    let mark: HTMLDivElement;
 
     rtcConnection.addEventListener("datachannel", (event) => {
       const drawingDataChannel = event.channel;
@@ -41,6 +44,18 @@ export default function Drawing() {
         context.lineWidth = 5;
 
         context.beginPath();
+
+        mark = document.createElement("div");
+        mark.style.fontSize = "20px";
+        mark.style.position = "absolute";
+        mark.style.top = `-20px`;
+        mark.style.left = `-20px`;
+        mark.style.width = "30px";
+        mark.style.height = "30px";
+        mark.style.textAlign = "center";
+        mark.style.border = "1px solid black";
+
+        document.body.appendChild(mark);
       });
 
       drawingDataChannel.addEventListener("message", (event) => {
@@ -48,6 +63,12 @@ export default function Drawing() {
 
         const x = parsedData.relativeX * canvas.width;
         const y = parsedData.relativeY * canvas.height;
+
+        const userName = parsedData.userName;
+
+        mark.innerHTML = userName;
+        mark.style.top = `${y}px`;
+        mark.style.left = `${x}px`;
 
         if (parsedData.isPainting) {
           context.lineTo(x, y);
@@ -62,7 +83,12 @@ export default function Drawing() {
     });
   }, [rtcConnection]);
 
-  useCanvasDrawing({ drawingDataChannel, color: "#ff0000", lineWidth: 5 });
+  useCanvasDrawing({
+    drawingDataChannel,
+    color: "#ff0000",
+    lineWidth: 5,
+    userName: Array.isArray(userName) ? userName[0] : userName,
+  });
 
   return (
     <>
