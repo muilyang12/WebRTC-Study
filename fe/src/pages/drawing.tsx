@@ -19,6 +19,7 @@ export default function Drawing() {
     console.log("create_room");
   }, [socket]);
 
+  const [drawingDataChannel, setDrawingDataChannel] = useState<RTCDataChannel>();
   useEffect(() => {
     if (!rtcConnection) return;
 
