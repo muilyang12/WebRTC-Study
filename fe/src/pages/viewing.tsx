@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import useCanvasDrawing from "@/hooks/pages/paint/useCanvasDrawing";
 import useWebRtcConnecting from "@/hooks/pages/common/useWebRtcConnecting";
+import { createNameLabel, updateNameLabel } from "@/utils/nameLabelUtils";
 
 export default function Drawing() {
   const router = useRouter();
@@ -45,15 +46,7 @@ export default function Drawing() {
 
         context.beginPath();
 
-        mark = document.createElement("div");
-        mark.style.fontSize = "20px";
-        mark.style.position = "absolute";
-        mark.style.top = `-20px`;
-        mark.style.left = `-20px`;
-        mark.style.width = "30px";
-        mark.style.height = "30px";
-        mark.style.textAlign = "center";
-        mark.style.border = "1px solid black";
+        mark = createNameLabel();
 
         document.body.appendChild(mark);
       });
@@ -66,9 +59,7 @@ export default function Drawing() {
 
         const userName = parsedData.userName;
 
-        mark.innerHTML = userName;
-        mark.style.top = `${y}px`;
-        mark.style.left = `${x}px`;
+        updateNameLabel(mark, userName, x, y);
 
         if (parsedData.isPainting) {
           context.lineTo(x, y);

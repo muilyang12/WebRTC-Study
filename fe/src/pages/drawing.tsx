@@ -1,8 +1,8 @@
-import { useState, useEffect, PointerEvent, createElement } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { io, Socket } from "socket.io-client";
 import useCanvasDrawing from "@/hooks/pages/paint/useCanvasDrawing";
 import useWebRtcConnecting from "@/hooks/pages/common/useWebRtcConnecting";
+import { createNameLabel, updateNameLabel } from "@/utils/nameLabelUtils";
 
 export default function Drawing() {
   const router = useRouter();
@@ -43,15 +43,7 @@ export default function Drawing() {
 
       context.beginPath();
 
-      mark = document.createElement("div");
-      mark.style.fontSize = "20px";
-      mark.style.position = "absolute";
-      mark.style.top = `-20px`;
-      mark.style.left = `-20px`;
-      mark.style.width = "30px";
-      mark.style.height = "30px";
-      mark.style.textAlign = "center";
-      mark.style.border = "1px solid black";
+      mark = createNameLabel();
 
       document.body.appendChild(mark);
     });
@@ -64,16 +56,7 @@ export default function Drawing() {
 
       const userName = parsedData.userName;
 
-      const element = document.createElement("div");
-      element.innerHTML = userName;
-      element.style.fontSize = "20px";
-      element.style.position = "absolute";
-      element.style.top = `${y}px`;
-      element.style.left = `${x}px`;
-
-      mark.innerHTML = userName;
-      mark.style.top = `${y}px`;
-      mark.style.left = `${x}px`;
+      updateNameLabel(mark, userName, x, y);
 
       if (parsedData.isPainting) {
         context.lineTo(x, y);
