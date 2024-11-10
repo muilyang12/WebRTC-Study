@@ -9,6 +9,8 @@ const morgan = require("morgan");
 
 const roomRoute = require("./src/routes/roomRoute");
 
+const isDev = process.env.NODE_ENV !== "production";
+
 // const { sequelize } = require("./src/models/index");
 // sequelize
 //   .sync({ force: false })
@@ -29,14 +31,12 @@ const server = http.createServer(app);
 connectSocket(server);
 
 const corsOptions = {
-  origin: process.env.ORIGIN,
-  // origin: "*",
+  origin: isDev ? "http://localhost:3333" : "",
   optionsSuccessStatus: 200,
   credentials: true,
 };
 app.use(cors(corsOptions));
 
-const isDev = process.env.NODE_ENV !== "production";
 if (!isDev) {
   app.use(morgan("combined"));
 

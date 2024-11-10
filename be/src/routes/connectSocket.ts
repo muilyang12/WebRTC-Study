@@ -3,10 +3,11 @@ const createRoom = require("../services/socket/createRoom");
 const joinRoom = require("../services/socket/joinRoom");
 
 module.exports = (server) => {
+  const isDev = process.env.NODE_ENV !== "production";
+
   const io = new socketIO.Server(server, {
     cors: {
-      origin: process.env.ORIGIN,
-      // origin: "*",
+      origin: isDev ? "http://localhost:3333" : "",
       optionsSuccessStatus: 200,
       credentials: true,
     },
